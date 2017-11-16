@@ -1,0 +1,50 @@
+<html ng-app="sensorApp">
+<head>
+ <meta charset='utf-8'>
+<title>Plant</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js">
+</script>
+</head>
+<body ng-controller="SensorCtrl as sens">
+This is the state of your sensors:
+<div ng-repeat="oneDevice in sens.devices">
+Device: {{ oneDevice.device }}:
+Sensor1: <span ng-bind-html="oneDevice.sensor1 | dryWetFilter"></span>
+Sensor2: <span ng-bind-html="oneDevice.sensor2 | dryWetFilter"></span>
+Sensor3: <span ng-bind-html="oneDevice.sensor3 | dryWetFilter"></span>
+</div>
+<script>
+	var sensorApp = angular.module("sensorApp", []);
+	sensorApp.controller("SensorCtrl", function($scope,$http,$sce) {
+		var me = this;
+		me.devices = [];
+		$http({
+  			method: 'GET',
+  			url: '/plantdata'
+		}).then(function successCallback(response) {
+			me.devices = response.data.devices;
+  		}, function errorCallback(response) {
+  		});
+	});
+	sensorApp.filter('dryWetFilter', function ($sce) {
+
+    		return function (input) {
+
+        		var output = "";       
+			if(input>75)
+				return $sce.trustAsHtml("WET! <b>&#x1F600;</b> ("+input+")");
+			if(input>65)
+				return $sce.trustAsHtml("WET <b>&#x1F60A;</b> ("+input+")");
+			if(input>57)
+				return $sce.trustAsHtml("Mmm.. <b>&#x1F60F;</b> ("+input+")");
+			if(input>52)
+				return $sce.trustAsHtml("Hey! <b>&#x1F620;</b> ("+input+")");
+			if(input>40)
+				return $sce.trustAsHtml("Hey! <b>&#x1F625;</b> ("+input+")");
+			else
+				return $sce.trustAsHtml("DRY <b>&#x1F632;</b> ("+input+")");
+    		}
+	});
+</script>
+</body>
+</html>
